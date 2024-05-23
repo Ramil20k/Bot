@@ -1,0 +1,44 @@
+from pyrogram import Client, filters
+from pyrogram.handlers import MessageHandler
+
+# Замените эти значения на ваши собственные
+API_ID = '20389595'
+API_HASH = 'ff93c9b1f600580a2f0911da8e4f86fa'
+BOT_TOKEN = '7188368386:AAGSKnm-oVGw0rE3WSLWkdfBAr4clVj0u7A'
+
+# Пары исходных и целевых каналов
+CHANNEL_PAIRS = [
+    ('@GASWBGAS', '@GASA_WB'),
+    ('source_channel_2', 'destination_channel_2'),
+    ('source_channel_3', 'destination_channel_3')
+]
+
+app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+
+# Функция для обработки и пересылки сообщений
+def forward_message(destination_channel):
+    def inner_forward(client, message):
+        try:
+            if message.text:
+                client.send_message(destination_channel, message.text)
+            elif message.photo:
+                client.send_photo(destination_channel, message.photo.file_id, caption=message.caption)
+            elif message.video:
+                client.send_video(destination_channel, message.video.file_id, caption=message.caption)
+            elif message.document:
+                client.send_document(destination_channel, message.document.file_id, caption=message.caption)
+            elif message.audio:
+                client.send_audio(destination_channel, message.audio.file_id, caption=message.caption)
+            # Добавьте другие типы контента по необходимости
+        except Exception as e:
+            print(f"Ошибка при пересылке сообщения в {destination_channel}: {e}")
+    return inner_forward
+
+# Добавляем обработчики для каждой пары каналов
+for source_channel, destination_channel in CHANNEL_PAIRS:
+    app.add_handler(MessageHandler(forward_message(destination_channel), filters.chat(source_channel)))
+
+# Запускаем бота
+if __name__ == "__main__":
+    print("Бот запущен...")
+    app.run()
